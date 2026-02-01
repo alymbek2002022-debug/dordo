@@ -11,6 +11,9 @@ BOT_TOKEN = os.getenv('BOT_TOKEN', 'YOUR_BOT_TOKEN_HERE')
 # Получить свой ID: напишите боту /get_my_id
 OWNER_ID = int(os.getenv('OWNER_ID', '0'))  # Установите свой ID или создайте .env переменную
 
+# Username владельца для контакта (без @, например: myusername)
+OWNER_USERNAME = os.getenv('OWNER_USERNAME', '')  # Установите свой username
+
 # Файл для хранения расписания
 SCHEDULE_FILE = os.path.join(os.path.dirname(__file__), 'schedule_data.json')
 
