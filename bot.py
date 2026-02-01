@@ -169,13 +169,12 @@ def add_group(message):
 
 
 @bot.message_handler(commands=['get_group_id'])
-@require_owner
 def get_group_id(message):
-    """Команда /get_group_id - Показать ID текущей группы"""
+    """Команда /get_group_id - Показать ID текущей группы (используется в группе)"""
     bot.send_message(
         chat_id=message.chat.id,
         text=f"🆔 ID этой группы/чата: `{message.chat.id}`\n\n"
-             f"Используйте эту команду:\n`/set_group {message.chat.id}`",
+             f"Чтобы добавить в список отправки, напишите владельцу боту:\n`/add_group {message.chat.id}`",
         parse_mode='Markdown'
     )
 
