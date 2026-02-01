@@ -76,6 +76,15 @@ def load_schedule(defaults: dict) -> dict:
                 # чтобы не терялись ключи дней недели при частичном сохранении.
                 merged = defaults.copy()
                 for k, v in data.items():
+                    # Миграция старого ключа 'group_id' в новый 'group_ids'
+                    if k == 'group_id':
+                        try:
+                            # если в файле указан один group_id, преобразуем в список
+                            merged['group_ids'] = [int(v)] if v is not None else merged.get('group_ids', [])
+                        except Exception:
+                            merged['group_ids'] = merged.get('group_ids', [])
+                        # не присваиваем merged['group_id'] дальше
+                        continue
                     if k == 'weekly_schedule' and isinstance(v, dict):
                         # Сохраняем дефолтные дни, но обновляем/добавляем времена из файла
                         merged_week = merged.get('weekly_schedule', {}).copy()
