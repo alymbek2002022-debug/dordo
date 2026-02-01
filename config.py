@@ -22,7 +22,7 @@ messages_storage = {
     'scheduled_text': 'Ваше первое сообщение',
     'scheduled_time': '09:00',
     'send_message_text': 'Стандартное сообщение',
-    'group_id': None,
+    'group_ids': [],  # Список ID групп для отправки
     'daily_schedule': {},
     'one_off': {},
     'weekly_schedule': {
@@ -119,7 +119,7 @@ def save_schedule(data: dict) -> None:
             'scheduled_text': data.get('scheduled_text'),
             'scheduled_time': data.get('scheduled_time'),
             'send_message_text': data.get('send_message_text'),
-            'group_id': data.get('group_id'),
+            'group_ids': data.get('group_ids', []),
             'daily_schedule': data.get('daily_schedule', {}),
             'weekly_schedule': data.get('weekly_schedule', {})
         }
