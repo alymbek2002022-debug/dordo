@@ -5,7 +5,7 @@ import time
 import telebot
 
 # Импортируем токен и хранилище
-from config import BOT_TOKEN, messages_storage, save_schedule
+from config import BOT_TOKEN, messages_storage, save_schedule, OWNER_ID
 
 # Настройка логирования
 logging.basicConfig(
@@ -44,7 +44,39 @@ DAYS_NAME_RU = {
 }
 
 
+# Функция для проверки прав доступа
+def is_owner(user_id: int) -> bool:
+    """Проверить, является ли пользователь владельцем бота"""
+    return user_id == OWNER_ID
+
+
+def require_owner(func):
+    """Декоратор для проверки прав доступа"""
+    def wrapper(message):
+        if not is_owner(message.from_user.id):
+            bot.reply_to(message, 
+                "❌ У вас нет доступа к этой команде!\n\n"
+                "Этот бот предназначен только для его владельца.",
+                parse_mode='Markdown')
+            return
+        return func(message)
+    return wrapper
+
+
+@bot.message_handler(commands=['get_my_id'])
+def get_my_id(message):
+    """Команда /get_my_id - Получить свой ID"""
+    user_id = message.from_user.id
+    bot.reply_to(message, 
+        f"🆔 *Ваш ID:* `{user_id}`\n\n"
+        f"Установите эту переменную в `.env` файл:\n\n"
+        f"`OWNER_ID={user_id}`",
+        parse_mode='Markdown')
+    logger.info(f"Запрос ID от пользователя {user_id}")
+
+
 @bot.message_handler(commands=['start'])
+@require_owner
 def start(message):
     """Команда /start - показывает список доступных команд"""
     user_chats.add(message.chat.id)
@@ -90,6 +122,7 @@ def start(message):
 
 
 @bot.message_handler(commands=['set_group'])
+@require_owner
 def set_group(message):
     """Команда /set_group - Установить ID группы для отправки"""
     args = message.text.split(maxsplit=1)
@@ -125,6 +158,7 @@ def set_group(message):
 
 
 @bot.message_handler(commands=['get_group_id'])
+@require_owner
 def get_group_id(message):
     """Команда /get_group_id - Показать ID текущей группы"""
     bot.send_message(
@@ -136,6 +170,7 @@ def get_group_id(message):
 
 
 @bot.message_handler(commands=['get_group'])
+@require_owner
 def get_group(message):
     """Команда /get_group - Показать текущую установленную группу"""
     if messages_storage['group_id'] is None:
@@ -150,6 +185,7 @@ def get_group(message):
 
 
 @bot.message_handler(commands=['send'])
+@require_owner
 def send_message_cmd(message):
     """Команда /send - Отправить заготовленное сообщение"""
     if messages_storage['group_id'] is None:
@@ -175,6 +211,7 @@ def send_message_cmd(message):
 
 
 @bot.message_handler(commands=['set_schedule'])
+@require_owner
 def set_schedule(message):
     """Команда /set_schedule - Установить время и текст для автоотправки"""
     args = message.text.split(maxsplit=2)
@@ -210,6 +247,7 @@ def set_schedule(message):
 
 
 @bot.message_handler(commands=['get_scheduled'])
+@require_owner
 def get_scheduled(message):
     """Команда /get_scheduled - Показать текущее запланированное сообщение"""
     scheduled_time = messages_storage['scheduled_time']
@@ -223,6 +261,7 @@ def get_scheduled(message):
 
 
 @bot.message_handler(commands=['edit_text'])
+@require_owner
 def edit_text(message):
     """Команда /edit_text - Изменить текст для отправки"""
     args = message.text.split(maxsplit=1)
@@ -245,6 +284,7 @@ def edit_text(message):
 
 
 @bot.message_handler(commands=['edit_time'])
+@require_owner
 def edit_time(message):
     """Команда /edit_time - Изменить время отправки"""
     args = message.text.split(maxsplit=1)
@@ -276,6 +316,7 @@ def edit_time(message):
 
 
 @bot.message_handler(commands=['status'])
+@require_owner
 def status(message):
     """Команда /status - Показать статус всех настроек"""
     status_text = (
@@ -288,6 +329,7 @@ def status(message):
 
 
 @bot.message_handler(commands=['help'])
+@require_owner
 def help_command(message):
     """Команда /help - Показать справку"""
     help_text = """
@@ -323,6 +365,7 @@ def help_command(message):
 
 
 @bot.message_handler(commands=['week_schedule'])
+@require_owner
 def week_schedule_menu(message):
     """Команда /week_schedule - Управление расписанием на неделю"""
     help_text = """
@@ -351,6 +394,7 @@ def week_schedule_menu(message):
 
 
 @bot.message_handler(commands=['add_schedule'])
+@require_owner
 def add_schedule(message):
     """Команда /add_schedule - Добавить время для дня недели"""
     args = message.text.split(maxsplit=3)
@@ -423,6 +467,7 @@ def add_schedule(message):
 
 
 @bot.message_handler(commands=['remove_schedule'])
+@require_owner
 def remove_schedule(message):
     """Команда /remove_schedule - Удалить время для дня"""
     args = message.text.split(maxsplit=2)
@@ -463,6 +508,7 @@ def remove_schedule(message):
 
 
 @bot.message_handler(commands=['show_week'])
+@require_owner
 def show_week(message):
     """Команда /show_week - Показать расписание на неделю"""
     schedule_text = "📅 *РАСПИСАНИЕ НА НЕДЕЛЮ:*\n\n"
@@ -484,6 +530,7 @@ def show_week(message):
 
 
 @bot.message_handler(commands=['clear_week'])
+@require_owner
 def clear_week(message):
     """Команда /clear_week - Очистить расписание"""
     messages_storage['weekly_schedule'] = {
@@ -500,6 +547,7 @@ def clear_week(message):
 
 
 @bot.message_handler(commands=['add_daily'])
+@require_owner
 def add_daily(message):
     """Команда /add_daily <Время> <Текст> - Добавить время для ежедневной отправки"""
     args = message.text.split(maxsplit=2)
@@ -526,6 +574,7 @@ def add_daily(message):
 
 
 @bot.message_handler(commands=['remove_daily'])
+@require_owner
 def remove_daily(message):
     """Команда /remove_daily <Время> - Удалить время из ежедневного расписания"""
     args = message.text.split(maxsplit=1)
@@ -547,6 +596,7 @@ def remove_daily(message):
 
 
 @bot.message_handler(commands=['show_daily'])
+@require_owner
 def show_daily(message):
     """Показать ежедневное расписание"""
     daily = messages_storage.get('daily_schedule', {})
@@ -561,6 +611,7 @@ def show_daily(message):
 
 
 @bot.message_handler(commands=['server_time'])
+@require_owner
 def server_time(message):
     """Показать текущее серверное время (полезно для проверки таймзоны)."""
     now = datetime.now()
