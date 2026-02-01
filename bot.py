@@ -5,7 +5,7 @@ import time
 import telebot
 
 # Импортируем токен и хранилище
-from config import BOT_TOKEN, messages_storage, save_schedule, OWNER_ID
+from config import BOT_TOKEN, messages_storage, save_schedule, OWNER_ID, OWNER_USERNAME
 
 # Настройка логирования
 logging.basicConfig(
@@ -54,9 +54,16 @@ def require_owner(func):
     """Декоратор для проверки прав доступа"""
     def wrapper(message):
         if not is_owner(message.from_user.id):
+            # Формируем сообщение с информацией о владельце
+            if OWNER_USERNAME:
+                contact_text = f"Свяжитесь с владельцем: @{OWNER_USERNAME}"
+            else:
+                contact_text = f"Свяжитесь с владельцем: [{OWNER_ID}](tg://user?id={OWNER_ID})"
+            
             bot.reply_to(message, 
-                "❌ У вас нет доступа к этой команде!\n\n"
-                "Этот бот предназначен только для его владельца.",
+                f"❌ У вас нет доступа к этой команде!\n\n"
+                f"Этот бот предназначен только для его владельца.\n\n"
+                f"📞 {contact_text}",
                 parse_mode='Markdown')
             return
         return func(message)
@@ -67,12 +74,16 @@ def require_owner(func):
 def get_my_id(message):
     """Команда /get_my_id - Получить свой ID"""
     user_id = message.from_user.id
+    username = message.from_user.username or "не установлен"
+    
     bot.reply_to(message, 
-        f"🆔 *Ваш ID:* `{user_id}`\n\n"
-        f"Установите эту переменную в `.env` файл:\n\n"
-        f"`OWNER_ID={user_id}`",
+        f"🆔 *Ваш ID:* `{user_id}`\n"
+        f"👤 *Ваш username:* `@{username}`\n\n"
+        f"Установите эти значения в `.env` файл:\n\n"
+        f"`OWNER_ID={user_id}`\n"
+        f"`OWNER_USERNAME={username}`",
         parse_mode='Markdown')
-    logger.info(f"Запрос ID от пользователя {user_id}")
+    logger.info(f"Запрос ID от пользователя {user_id} (@{username})")
 
 
 @bot.message_handler(commands=['start'])
