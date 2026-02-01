@@ -7,6 +7,10 @@ load_dotenv()
 # Токен бота
 BOT_TOKEN = os.getenv('BOT_TOKEN', 'YOUR_BOT_TOKEN_HERE')
 
+# ID владельца бота (только он может использовать команды)
+# Получить свой ID: напишите боту /get_my_id
+OWNER_ID = int(os.getenv('OWNER_ID', '0'))  # Установите свой ID или создайте .env переменную
+
 # Файл для хранения расписания
 SCHEDULE_FILE = os.path.join(os.path.dirname(__file__), 'schedule_data.json')
 
